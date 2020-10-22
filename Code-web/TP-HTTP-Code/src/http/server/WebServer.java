@@ -66,6 +66,7 @@ public class WebServer {
         String uri = "";
         String command = "";
         String message = "";
+        byte[] byteData = null;
         Map<String, String> map = new HashMap<String,String>();
         String str = ".";
         str = in.readLine();
@@ -77,19 +78,32 @@ public class WebServer {
 	        String[] lines = null;
 	        str = in.readLine();
 	        System.out.println(str);
+	        
 	        while (str != null && !str.equals("")) {
-	        	
 	        	lines = str.split(": ");
 	        	map.put(lines[0], lines[1]); // enregistrer tous les headers
 	        	str = in.readLine();
 	        	System.out.println(str);
 	        }
 	        
-	        /*
-	        do {
-		        str = in.readLine();
-		        System.out.println(str);
-	        } while (!str.endsWith("\r\n"));*/
+	        if(map.containsKey("Content-Length")) {
+		        int cL = Integer.valueOf(map.get("Content-Length"));
+		        char[]  buffer      = new char[cL];
+	
+		        //System.out.println("Reading "+ cL + "bytes");
+		        in.read(buffer, 0, cL);
+		        
+		        postData = new String(buffer, 0, buffer.length);
+		        System.out.println(postData);
+		        
+		        Charset cs = Charset.forName("UTF-8");
+		        CharBuffer cb = CharBuffer.allocate(buffer.length);
+		        cb.put(buffer);
+		        cb.flip();
+		        ByteBuffer bb = cs.encode(cb);
+		        byteData = bb.array();
+	        }
+        }
 	        
         }
 	        
@@ -98,18 +112,15 @@ public class WebServer {
         		get(remote, out, uri);
         		break;
         	case "HEAD":
-        		System.out.println("HEAD");
-        		head(out,uri);
+        		head(out, uri);
         		break;
         	case "PUT":
-        		System.out.println("PUT");
-        		put(remote,out,uri);
+        		put(out, uri, byteData);
         		break;
         	case "POST":
-        		post(in, out, uri, map);
+        		post(out, uri, map, byteData);
         		break;
         	case "DELETE":
-        		System.out.println("DELETE");
         		delete(out,uri);
         		break;
     		default:
@@ -171,15 +182,25 @@ public class WebServer {
 		  out.println("Content-Type: " + contentType);
 		  out.println("Server: Bot");
 		  out.println("");
+		  out.println("<html>");
+		  out.println("<head><title>403 Forbidden</title></head>");
+    	  out.println("<body><h1>403 Forbidden</h1>");
+    	  out.println("<p>Access is forbidden to the requested page.</p></body>");
+    	  out.println("</html>");
 		  break;
 	  case "404":
 		  out.println("HTTP/1.1 " + String.valueOf(stat) + " Not Found");
 		  out.println("Content-Type: " + contentType);
 		  out.println("Server: Bot");
 		  out.println("");
+    	  out.println("<html>");
+    	  out.println("<head><title>404 Not Found</title></head>");
+    	  out.println("<body><h1>404 Not Found</h1>");
+    	  out.println("<p>The requested URL was not found on this server.</p></body>");
+    	  out.println("</html>");
 		  break;
 	  }
-	  
+	  out.flush();
   }
   
   /**
@@ -213,11 +234,21 @@ public class WebServer {
 		  out.println("HTTP/1.1 " + String.valueOf(stat) + " Forbidden");
 		  out.println("Server: Bot");
 		  out.println("");
+		  out.println("<html>");
+		  out.println("<head><title>403 Forbidden</title></head>");
+    	  out.println("<body><h1>403 Forbidden</h1>");
+    	  out.println("<p>Access is forbidden to the requested page.</p></body>");
+    	  out.println("</html>");
 		  break;
 	  case "404":
 		  out.println("HTTP/1.1 " + String.valueOf(stat) + " Not Found");
 		  out.println("Server: Bot");
 		  out.println("");
+    	  out.println("<html>");
+    	  out.println("<head><title>404 Not Found</title></head>");
+    	  out.println("<body><h1>404 Not Found</h1>");
+    	  out.println("<p>The requested URL was not found on this server.</p></body>");
+    	  out.println("</html>");
 		  break;
 	  case "500":
 		  out.println("HTTP/1.1 " + String.valueOf(stat) + " Internal Server Error");
@@ -230,6 +261,7 @@ public class WebServer {
 		  out.println("");
 		  break;
 	  }
+	  out.flush();
   }
   
   /**
@@ -285,100 +317,124 @@ public class WebServer {
    */
   
   private void get(Socket remote, PrintWriter out, String uri) {
-	  
 	  try{
-
 		  String path = ClassLoader.getSystemResource("").toString().substring(6);
-		  path = path.substring(0, path.length()-1) + uri;
+		  path = path.substring(0, path.length()-1) + (uri.indexOf("?")==-1 ? uri : uri.substring(0, uri.indexOf("?")));
 		  File file = new File(path);
 		  System.out.println(path); //Les fichiers se trouvent sous /bin
-		  
-		  if (uri.equals("/")) {
-			  
-			  requestHandler(out,200,"text/html");
-			  out.println("<link rel=\"icon\" href=\"data:;base64,=\">"); //ignorer favicon.ico
-			  // Send the HTML page
-			  out.println("<H1>Welcome to the Ultra Mini-WebServer</H1>");
-			  out.flush();
-		 
+		  if(!file.canRead()){
+			  requestHandler(out,403,getContentType(file));
 		  } else {
-			  
-			  String type = getContentType(file);
-			  if(file.isFile() && file.exists()){
-				  
-				  if(type.equals("text/html")){
+			  if(!uri.contains("?")) {
+					  
+				  if (uri.equals("/")) {
 					  requestHandler(out,200,"text/html");
-					  out.println("<link rel=\"icon\" href=\"data:;base64,=\">");
-					  
-					  String encoding="GBK";
-					  InputStreamReader read = new InputStreamReader(
-							  new FileInputStream(file),encoding);
-					  BufferedReader bufferedReader = new BufferedReader(read);
-					  String lineTxt = null;
-					  while((lineTxt = bufferedReader.readLine()) != null){
-						  out.println(lineTxt);
-					  }
-					  read.close();
+					  out.println("<link rel=\"icon\" href=\"data:;base64,=\">"); //ignorer favicon.ico
+					  // Send the HTML page
+					  out.println("<H1>Welcome to the Ultra Mini-WebServer</H1>");
 					  out.flush();
-					  
-				  /*} else if (type.equals("image/png")) {
-	
-					  try {
-						  BufferedImage img = ImageIO.read(new File(path));
-						  requestHandler(out,200,"image/png");
-						  ByteArrayOutputStream pngBaos = new ByteArrayOutputStream();
-						  ImageIO.write(img,"png", pngBaos);
-						  pngBaos.flush();
-						  byte[] imgByte = pngBaos.toByteArray();
-						  pngBaos.close();
-						  remote.getOutputStream().write(imgByte);
-					  } catch (IIOException e) {
-						  requestHandler(out,404,"image/png");
-					  } catch (Exception e) {
-						  e.printStackTrace();
-					  }*/
-					  
+				 
 				  } else {
+					  String type = getContentType(file);
+					  System.out.println(type);
 					  
-					  BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
-					  BufferedOutputStream byteOut = new BufferedOutputStream(remote.getOutputStream());
-					  requestHandler(out,200,type);
-					  byte[] buffer = new byte[1048576];
-					  int nbRead;
-					  while((nbRead = in.read(buffer)) != -1) {
-						  byteOut.write(buffer, 0, nbRead);
+					  if(file.isFile() && file.exists()){
+						  if(type.equals("text/html")){
+							  requestHandler(out,200,"text/html");
+							  out.println("<link rel=\"icon\" href=\"data:;base64,=\">");
+							  
+							  String encoding="GBK";
+							  InputStreamReader read = new InputStreamReader(
+									  new FileInputStream(file),encoding);
+							  BufferedReader bufferedReader = new BufferedReader(read);
+							  String lineTxt = null;
+							  while((lineTxt = bufferedReader.readLine()) != null){
+								  out.println(lineTxt);
+							  }
+							  read.close();
+							  out.flush();
+							  
+						  } else if (type.equals("image/png")) {
+							  try {
+								  BufferedImage img = ImageIO.read(new File(path));
+								  requestHandler(out,200,"image/png");
+								  out.flush();
+								  ByteArrayOutputStream pngBaos = new ByteArrayOutputStream();
+								  ImageIO.write(img,"png", pngBaos);
+								  pngBaos.flush();
+								  byte[] imgByte = pngBaos.toByteArray();
+								  pngBaos.close();
+								  remote.getOutputStream().write(imgByte);
+							  } catch (IIOException e) {
+								  requestHandler(out,404,"image/png");
+							  } catch (Exception e) {
+								  e.printStackTrace();
+							  }
+							  
+						  } else {
+							  BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
+							  BufferedOutputStream byteOut = new BufferedOutputStream(remote.getOutputStream());
+							  requestHandler(out,200,type);
+							  
+							  byte[] buffer = new byte[1024];
+							  
+							  int nbRead;
+							  while((nbRead = in.read(buffer)) != -1) {
+								  byteOut.write(buffer, 0, nbRead);
+							  }
+							  in.close();
+							  byteOut.flush(); 
+						  }
+						  
+					  } else if(file.isFile()) {
+						  requestHandler(out,403,type);
+					  } else {
+						  requestHandler(out,404,type);
 					  }
-					  in.close();
-					  byteOut.flush(); 
-					  //byteOut.close();
 				  }
-				  
+			  } else if(uri.contains(".html?")&&file.exists()&&file.isFile()){ //GET avec paramètres
+				  requestHandler(out,200,"text/html");
+				  out.println("<link rel=\"icon\" href=\"data:;base64,=\">");
+				  System.out.println(uri);
+				  Map<String, String> map = new HashMap<String,String>();
+				  String lineParam = null;
+				  String[] params = null;
+				  lineParam = uri.substring(uri.indexOf("?")+1);
+				  System.out.println(lineParam);
+				  params = lineParam.split("&");
+				  System.out.println(params);
+				  for(String s : params) 
+					  map.put(s.split("=")[0], s.split("=")[1]);
+				  StringBuffer buffer = new StringBuffer();
+				  BufferedReader bf= new BufferedReader(new FileReader(file));
+				  String s = null;
+				  while((s = bf.readLine())!=null) {
+					  buffer.append(s.trim());
+				  }
+				  bf.close();
+				  String html = buffer.toString();
+				  int index = html.indexOf("</body>");
+				  String TextAInserer = "<script>\r\n";
+				  for(String key:map.keySet()){
+					  TextAInserer += "document.getElementById(\"" + key + "\").value = " + map.get(key) + ";\r\n";
+				  }
+				  TextAInserer += "add();</script>\r\n";
+				  buffer.insert(index,TextAInserer);
+				  out.println(buffer.toString());
+				  out.flush();
 			  } else {
-	              if(file.isFile()) {
-	            	  requestHandler(out,403,type);
-	            	  out.println("<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">");
-	            	  out.println("<title>404 Not Found</title>");
-	            	  out.println("<h1>404 Not Found</h1>");
-	            	  out.println("<p>The requested URL was not found on this server.</p>");
-	              } else {
-	            	  requestHandler(out,404,type);
-	            	  out.println("<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">");
-	            	  out.println("<title>404 Not Found</title>");
-	            	  out.println("<h1>404 Not Found</h1>");
-	            	  out.println("<p>The requested URL was not found on this server.</p>");
-	              }
-	              out.flush();
-	          }
+				  requestHandler(out,404,"text/html");
+			  }
 		  }
 	  } catch (IOException e) {
-          e.printStackTrace();
-          try {
-        	  requestHandler(out,500);
-              out.flush();
-          } catch (Exception e2) {
-              e2.printStackTrace();
-          }
-      }
+	      e.printStackTrace();
+	      try {
+	    	  requestHandler(out,500);
+	          out.flush();
+	      } catch (Exception e2) {
+	          e2.printStackTrace();
+	      }
+	  }
 	  //else if(url.contains(".html?"))//GET avec param¨¨tres
 	  
   }
@@ -426,47 +482,41 @@ public class WebServer {
    * Lorsqu'un client veut uploader une ressource sur le serveur, cette méthode sera appelée par la méthode start(). 
    * 		Elle aura pour but de créer le fichier avec le contenu voulu, ou remplacer ce dernier si le fichier existe déjà.
    * 
-   * @param remote
-   * 		Désigne la socket associée au client
    * @param out
    * 		Désigne le flux de communication en sortie dirigé vers le client.
    * @param uri
-   * 		L'URL du fichier que l'on veut récupérer
+   * 		L'URL du fichier que l'on veut récupérer.
+   * @param byteData
+   * 		Les données du body sous forme byte[].
    * 
    * @see WebServer#start
    * @see WebServer#requestHandler(PrintWriter, int)
    */
   
-  private void put(Socket remote, PrintWriter out, String uri) {
+  private void put(Socket remote, PrintWriter out, String uri, byte[] byteData) {
 	  
 	  try {
-		  BufferedInputStream  in = new BufferedInputStream (remote.getInputStream());
-		  
 		  String path = ClassLoader.getSystemResource("").toString().substring(6);
 		  path = path.substring(0, path.length()-1) + uri;
 		  File file = new File(path);
-		  
-		  if (!file.createNewFile()){
-              PrintWriter pw = new PrintWriter(file);
-              pw.close();
-          }
-		  
-		  BufferedOutputStream fileOut = new BufferedOutputStream(new FileOutputStream(file, file.exists()));
-
-          byte[] buffer = new byte[256];
-          while(in.available() > 0) {
-              int nbRead = in.read(buffer);
-              fileOut.write(buffer, 0, nbRead);
-          }
-          fileOut.flush();
-          fileOut.close();
-
-          if (file.createNewFile()) {
-        	  requestHandler(out,204);
-          } else {
-        	  requestHandler(out,201);
-          }
-          out.flush();
+		  //System.out.println(file.isFile());
+		  //System.out.println(file.exists());
+		  //System.out.println(file.canRead());
+		  //System.out.println(file.canWrite());
+		  if(!file.canWrite()){
+			  requestHandler(out,403,getContentType(file));
+		  } else {
+			  FileOutputStream fos = new FileOutputStream(file);
+			  fos.write(byteData);
+			  fos.close();
+			  
+			  if (file.createNewFile()) {
+				  requestHandler(out,204);
+			  } else {
+				  requestHandler(out,201);
+			  }
+			  out.flush();
+		  }
 	  } catch (Exception e) {
           e.printStackTrace();
           try {
@@ -500,19 +550,22 @@ public class WebServer {
 		  File file = new File(path);
 		  
           boolean removed = false;
-          
-          if (file.exists() && file.isFile()){
-              removed = file.delete();
-          }
-          
-          if(removed) {
-        	  requestHandler(out,204);
-          } else if (!file.exists()) {
-        	  requestHandler(out,404);
-          } else {
-        	  requestHandler(out,403);
-          }
-          out.flush();
+          if(!file.canWrite()){
+			  requestHandler(out,403,getContentType(file));
+		  } else {
+			  if (file.exists() && file.isFile()){
+				  removed = file.delete();
+			  }
+			  
+			  if(removed) {
+				  requestHandler(out,204);
+			  } else if (!file.exists()) {
+				  requestHandler(out,404);
+			  } else {
+				  requestHandler(out,403);
+			  }
+			  out.flush();
+		  }
 	  } catch (Exception e) {
           e.printStackTrace();
           try {
@@ -534,38 +587,55 @@ public class WebServer {
    * 		Désigne le flux de communication en sortie dirigé vers le client.
    * @param uri
    * 		L'URL du fichier que l'on veut récupérer
+   * @param headers
+   * 		Un hashmap contenant toutes les informations du header.
+   * @param byteData
+   * 		Les données du body sous forme byte[].
    * 
    * @see WebServer#start 
    * @see WebServer#requestHandler(PrintWriter, int, String)
    */
   
-  private void post(BufferedReader in, PrintWriter out, String uri, Map<String, String> request) {
+  private void post(PrintWriter out, String uri, Map<String, String> headers, byte[] byteData) {
 	  
 	  String path = ClassLoader.getSystemResource("").toString().substring(6);
 	  path = path.substring(0, path.length()-1) + uri;
 	  File file = new File(path);
-	  //requestHandler(out,100,"text/html");
 	  
-	  String encoding="GBK";
 	  try {
-		  requestHandler(out,200,"text/html");
-	      if(file.isFile() && file.exists()){ 
-	          InputStreamReader read = new InputStreamReader(
-	          new FileInputStream(file),encoding);
-	          BufferedReader bufferedReader = new BufferedReader(read);
-	          String lineTxt = null;
-	          while((lineTxt = bufferedReader.readLine()) != null){
-	              out.println(lineTxt);
-	          }
-	          read.close();
-	          
-	      }else{
-	          System.out.println("File not found.");
-	      }
-	  } catch (IOException e) {
-  				e.printStackTrace();
+		  if(headers.containsKey("test-500") && headers.get("test-500").equals("1")) {
+			  int i = 0;
+			  i = 1/i;
+		  }
+		  if(!file.canWrite()){
+			  requestHandler(out,403,getContentType(file));
+		  } else {
+			  if(file.isFile() && file.exists()){ 
+				  requestHandler(out,200,"text/html");
+				  RandomAccessFile rf = new RandomAccessFile(file, "rw");
+				  rf.seek(rf.length());
+				  rf.write(byteData);
+				  rf.close();
+				  
+				  /*FileWriter fw = new FileWriter(file, true);
+				  BufferedWriter bw = new BufferedWriter(fw);
+				  
+				  bw.append(data);
+				  bw.close();
+				  fw.close();*/
+			  }else{
+				  System.out.println("File not found.");
+				  requestHandler(out,404,getContentType(file));
+			  }
+		  }
+	  } catch (Exception e) {
+		  e.printStackTrace();
+		  try {
+        	  requestHandler(out,500);
+          } catch (Exception e2) {
+              System.out.println(e2);
+          }
 	  }
-	  out.flush();
 	      
   }
 }
