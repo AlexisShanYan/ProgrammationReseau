@@ -11,7 +11,6 @@ import java.net.*;
 import java.util.Scanner;
 
 /**
- * 
  * <b>EchoClient est la classe qui représente un client de l'application.</b>
  * 
  * <p>
@@ -20,6 +19,9 @@ import java.util.Scanner;
  * <li>Ecrire un message et l'envoyer au serveur pour qu'il le transmette au chat.</li>
  * <li>Recevoir les messages du serveur pour afficher ces derniers sur le terminal ou l'interface graphique du client.</li>
  * </ul>
+ * 
+ * @see EchoServerMultiThreaded
+ * @see ClientThread
  * 
  * 
  * @author alexis

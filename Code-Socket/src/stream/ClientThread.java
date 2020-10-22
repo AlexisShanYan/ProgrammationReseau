@@ -23,6 +23,7 @@ import java.util.LinkedList;
  * 					voir la documentation sur la classe EchoServerMultiThreaded.</p>
  * 
  * @see EchoServerMultiThreaded
+ * @see EchoClient
  * 
  * @author alexis
  * @version 2.0
@@ -62,7 +63,7 @@ public class ClientThread
 	 * 			On incrémente aussi le nombre de sockets contenus dans la liste.</p>
 	 * 
 	 * @param s
-	 * @param clientName
+	 * 		C'est la socket liée au client
 	 * 
 	 * @see ClientThread#list
 	 * @see ClientThread#totalSocket
@@ -80,7 +81,6 @@ public class ClientThread
   	* @see ClientThread#list
   	* @see ClientThread#totalSocket
   	* @see ClientThread#clientSocket
-  	* @see ClientThread#clientName
   	**/
 	
 	public void run() {
