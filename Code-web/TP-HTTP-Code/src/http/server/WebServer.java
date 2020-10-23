@@ -17,20 +17,20 @@ import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
 
 /**
- * <b>WebServer reprï¿½sente un serveur web sur lequel des clients pourront se connecter grï¿½ce au protocole HTTP.</b>
+ * <b>WebServer représente un serveur web sur lequel des clients pourront se connecter grâce au protocole HTTP.</b>
  * 
- * <p>Ce serveur pourra gï¿½rer toutes sortes de requï¿½tes (GET, PUT, ...) et se chargera d'informer l'utilisateur en cas de problï¿½me.
- * 		Ces problï¿½mes peuvent ï¿½tre multiples : fichier non trouvï¿½ (erreur 404), fichier dont la consultation/modification est interdite (erreur 403),
- * 			problï¿½me arrivï¿½ au serveur (erreur 500). Lorsque tout se passe bien, le client reï¿½oit une rï¿½ponse composï¿½e d'un code 200 OK.</p>
+ * <p>Ce serveur pourra gérer toutes sortes de requêtes (GET, PUT, ...) et se chargera d'informer l'utilisateur en cas de problème.
+ * 		Ces problèmes peuvent être multiples : fichier non trouvé (erreur 404), fichier dont la consultation/modification est interdite (erreur 403),
+ * 			problème arrivé au serveur (erreur 500). Lorsque tout se passe bien, le client reçoit une réponse composée d'un code 200 OK.</p>
  * 
- * @author alexis, zihao
+ * @author alexis
  * @version 2.0
  */
 public class WebServer {
 
 	  /**
-	   * <p>Cette mï¿½thode dï¿½marre le serveur et ï¿½coute les requï¿½tes formulï¿½es par les clients. 
-	   * 		Une fois la requï¿½te identifiï¿½e, elle en confie la responsabilitï¿½ ï¿½ la mï¿½thode associï¿½e.</p>
+	   * <p>Cette méthode démarre le serveur et écoute les requêtes formulées par les clients. 
+	   * 		Une fois la requête identifiée, elle en confie la responsabilité à la méthode associée.</p>
 	   * 
 	   * @see WebServer#get
 	   * @see WebServer#head
@@ -93,7 +93,8 @@ public class WebServer {
 		        if(map.containsKey("Content-Length")) {
 			        int cL = Integer.valueOf(map.get("Content-Length"));
 			        char[]  buffer      = new char[cL];
-
+		
+			        //System.out.println("Reading "+ cL + "bytes");
 			        in.read(buffer, 0, cL);
 			        
 			        postData = new String(buffer, 0, buffer.length);
@@ -142,10 +143,10 @@ public class WebServer {
 	  }
 
 	  /**
-	   * Dï¿½marre l'application.
+	   * Démarre l'application.
 	   * 
 	   * @param args
-	   *            Les paramï¿½tres de ligne de commande ne sont pas utilisï¿½s.
+	   *            Les paramètres de ligne de commande ne sont pas utilisés.
 	   *            
 	   * @see WebServer#start
 	   */
@@ -155,14 +156,14 @@ public class WebServer {
 	  }
 	  
 	  /**
-	   * Envoie au client l'ï¿½tat de la requï¿½te avec le type de la ressource manipulï¿½e.
+	   * Envoie au client l'état de la requête avec le type de la ressource manipulée.
 	   * 
 	   * @param out
-	   * 	Dï¿½signe le flux de communication en sortie dirigï¿½ vers le client.
+	   * 	Désigne le flux de communication en sortie dirigé vers le client.
 	   * @param stat
-	   * 	Dï¿½signe le code de l'ï¿½tat de la requï¿½te.
+	   * 	Désigne le code de l'état de la requête.
 	   * @param contentType
-	   * 	Dï¿½signe le type de la ressource manipulï¿½e.
+	   * 	Désigne le type de la ressource manipulée.
 	   */
 	  
 	  private void requestHandler(PrintWriter out, int stat, String contentType) {
@@ -206,12 +207,12 @@ public class WebServer {
 	  }
 	  
 	  /**
-	   * Envoie au client l'ï¿½tat de la requï¿½te.
+	   * Envoie au client l'état de la requête.
 	   * 
 	   * @param out
-	   * 	Dï¿½signe le flux de communication en sortie dirigï¿½ vers le client.
+	   * 	Désigne le flux de communication en sortie dirigé vers le client.
 	   * @param stat
-	   * 	Dï¿½signe le code de l'ï¿½tat de la requï¿½te.
+	   * 	Désigne le code de l'état de la requête.
 	   */
 	  
 	  private void requestHandler(PrintWriter out, int stat) {
@@ -267,13 +268,13 @@ public class WebServer {
 	  }
 	  
 	  /**
-	   * Rï¿½cupï¿½re le type du fichier manipulï¿½ par le serveur web.
+	   * Récupère le type du fichier manipulé par le serveur web.
 	   * 
 	   * @param file
-	   * 		Dï¿½signe le fichier manipulï¿½ par le serveur web.
+	   * 		Désigne le fichier manipulé par le serveur web.
 	   * 
 	   * @return type
-	   * 		Retourne le type du fichier manipulï¿½.
+	   * 		Retourne le type du fichier manipulé.
 	   */
 	  
 	  public String getContentType(File file) {
@@ -307,15 +308,15 @@ public class WebServer {
 	  }
 	  
 	  /**
-	   * Lorsqu'un client veut rï¿½cupï¿½rer une ressource du serveur, cette mï¿½thode sera appelï¿½e par la mï¿½thode start(). 
-	   * 		Elle aura pour but de montrer en sortie le fichier demandï¿½ par le client, qu'il soit composï¿½ de texte ou d'images.
+	   * Lorsqu'un client veut récupérer une ressource du serveur, cette méthode sera appelée par la méthode start(). 
+	   * 		Elle aura pour but de montrer en sortie le fichier demandé par le client, qu'il soit composé de texte ou d'images.
 	   * 
 	   * @param remote
-	   * 		Dï¿½signe la socket associï¿½e au client.
+	   * 		Désigne la socket associée au client.
 	   * @param out
-	   * 		Dï¿½signe le flux de communication en sortie dirigï¿½ vers le client.
+	   * 		Désigne le flux de communication en sortie dirigé vers le client.
 	   * @param uri
-	   * 		L'URL du fichier que l'on veut rï¿½cupï¿½rer.
+	   * 		L'URL du fichier que l'on veut récupérer.
 	   * 
 	   * @see WebServer#start
 	   * @see WebServer#requestHandler(PrintWriter, int, String)
@@ -398,24 +399,35 @@ public class WebServer {
 						  }
 					  }
 				  }
-			  } else if(uri.contains("Adder.html?") && !uri.endsWith("?") && file.exists() && file.isFile()){ //GET avec parametres
+			  } else if(uri.contains(".html?")&&file.exists()&&file.isFile()){ //GET avec parametres
 				  requestHandler(out,200,"text/html");
 				  out.println("<link rel=\"icon\" href=\"data:;base64,=\">");
+				  System.out.println(uri);
 				  Map<String, String> map = new HashMap<String,String>();
 				  String lineParam = null;
 				  String[] params = null;
 				  lineParam = uri.substring(uri.indexOf("?")+1);
+				  System.out.println(lineParam);
 				  params = lineParam.split("&");
+				  System.out.println(params);
 				  for(String s : params) 
 					  map.put(s.split("=")[0], s.split("=")[1]);
-				  int result = 0;
-				  for(String key:map.keySet()){
-					  if((key.equals("first")||key.equals("second")) && !map.get(key).isEmpty()) {
-						  result += Integer.parseInt(map.get(key));
-					  }
+				  StringBuffer buffer = new StringBuffer();
+				  BufferedReader bf= new BufferedReader(new FileReader(file));
+				  String s = null;
+				  while((s = bf.readLine())!=null) {
+					  buffer.append(s.trim());
 				  }
-				  
-				  out.println(result);
+				  bf.close();
+				  String html = buffer.toString();
+				  int index = html.indexOf("</body>");
+				  String TextAInserer = "<script>\r\n";
+				  for(String key:map.keySet()){
+					  TextAInserer += "document.getElementById(\"" + key + "\").value = " + map.get(key) + ";\r\n";
+				  }
+				  TextAInserer += "add();</script>\r\n";
+				  buffer.insert(index,TextAInserer);
+				  out.println(buffer.toString());
 				  out.flush();
 			  } else {
 				  requestHandler(out,404,"text/html");
@@ -430,17 +442,18 @@ public class WebServer {
 		          e2.printStackTrace();
 		      }
 		  }
+		  //else if(url.contains(".html?"))//GET avec param¨¨tres
 		  
 	  }
 	  
 	  /**
-	   * Lorsqu'un client veut rï¿½cupï¿½rer l'entï¿½te d'une ressource web, cette mï¿½thode sera appelï¿½e par la mï¿½thode start(). 
-	   * 		Elle aura pour but de montrer en sortie l'entï¿½te demandï¿½e par le client.
+	   * Lorsqu'un client veut récupérer l'entête d'une ressource web, cette méthode sera appelée par la méthode start(). 
+	   * 		Elle aura pour but de montrer en sortie l'entête demandée par le client.
 	   * 
 	   * @param out
-	   * 		Dï¿½signe le flux de communication en sortie dirigï¿½ vers le client.
+	   * 		Désigne le flux de communication en sortie dirigé vers le client.
 	   * @param uri
-	   * 		L'URL du fichier que l'on veut rï¿½cupï¿½rer.
+	   * 		L'URL du fichier que l'on veut récupérer.
 	   * 
 	   * @see WebServer#start
 	   * @see WebServer#requestHandler
@@ -473,17 +486,17 @@ private void head(PrintWriter out, String uri) {
 	  }
 	  
 	  /**
-	   * Lorsqu'un client veut uploader une ressource sur le serveur, cette mï¿½thode sera appelï¿½e par la mï¿½thode start(). 
-	   * 		Elle aura pour but de crï¿½er le fichier avec le contenu voulu, ou remplacer ce dernier si le fichier existe dï¿½jï¿½.
+	   * Lorsqu'un client veut uploader une ressource sur le serveur, cette méthode sera appelée par la méthode start(). 
+	   * 		Elle aura pour but de créer le fichier avec le contenu voulu, ou remplacer ce dernier si le fichier existe déjà.
 	   * 
 	   * @param remote
-	   * 		Dï¿½signe la socket associï¿½e au client.
+	   * 		Désigne la socket associée au client.
 	   * @param out
-	   * 		Dï¿½signe le flux de communication en sortie dirigï¿½ vers le client.
+	   * 		Désigne le flux de communication en sortie dirigé vers le client.
 	   * @param uri
-	   * 		L'URL du fichier que l'on veut rï¿½cupï¿½rer.
+	   * 		L'URL du fichier que l'on veut récupérer.
 	   * @param byteData
-	   * 		Les donnï¿½es du body sous forme byte[].
+	   * 		Les données du body sous forme byte[].
 	   * 
 	   * @see WebServer#start
 	   * @see WebServer#requestHandler(PrintWriter, int)
@@ -495,7 +508,10 @@ private void head(PrintWriter out, String uri) {
 				  String path = ClassLoader.getSystemResource("").toString().substring(6);
 				  path = path.substring(0, path.length()-1) + uri;
 				  File file = new File(path);
-				  
+				  //System.out.println(file.isFile());
+				  //System.out.println(file.exists());
+				  //System.out.println(file.canRead());
+				  //System.out.println(file.canWrite());
 				  if(file.isFile()&&file.exists()&&!file.canWrite()){
 					  requestHandler(out,403,getContentType(file));
 				  } else {
@@ -523,13 +539,13 @@ private void head(PrintWriter out, String uri) {
 		}
 	  
 	  /**
-	   * Lorsqu'un client veut supprimer une ressource sur le serveur, cette mï¿½thode sera appelï¿½e par la mï¿½thode start(). 
-	   * 	Comme son nom l'indique, elle supprimera la ressource demandï¿½e si cette derniï¿½re existe, sinon, une erreur surviendra.
+	   * Lorsqu'un client veut supprimer une ressource sur le serveur, cette méthode sera appelée par la méthode start(). 
+	   * 	Comme son nom l'indique, elle supprimera la ressource demandée si cette dernière existe, sinon, une erreur surviendra.
 	   * 
 	   * @param out
-	   * 		Dï¿½signe le flux de communication en sortie dirigï¿½ vers le client.
+	   * 		Désigne le flux de communication en sortie dirigé vers le client.
 	   * @param uri
-	   * 		L'URL du fichier que l'on veut rï¿½cupï¿½rer.
+	   * 		L'URL du fichier que l'on veut récupérer.
 	   * 
 	   * @see WebServer#start 
 	   * @see WebServer#requestHandler(PrintWriter, int)
@@ -572,18 +588,18 @@ private void head(PrintWriter out, String uri) {
 		  }
 	  
 	  /**
-	   * Lorsqu'un client veut mettre ï¿½ jour une ressource sur le serveur, cette mï¿½thode sera appelï¿½e par la mï¿½thode start(). 
-	   * 		Elle aura pour but de crï¿½er le fichier avec le contenu voulu, 
-	   * 			ou de rajouter des informations (sans remplacer celles dï¿½jï¿½ prï¿½sentes !) ï¿½ ce dernier si le fichier existe dï¿½jï¿½.
+	   * Lorsqu'un client veut mettre à jour une ressource sur le serveur, cette méthode sera appelée par la méthode start(). 
+	   * 		Elle aura pour but de créer le fichier avec le contenu voulu, 
+	   * 			ou de rajouter des informations (sans remplacer celles déjà présentes !) à ce dernier si le fichier existe déjà.
 	   * 
 	   * @param out
-	   * 		Dï¿½signe le flux de communication en sortie dirigï¿½ vers le client.
+	   * 		Désigne le flux de communication en sortie dirigé vers le client.
 	   * @param uri
-	   * 		L'URL du fichier que l'on veut rï¿½cupï¿½rer.
+	   * 		L'URL du fichier que l'on veut récupérer.
 	   * @param headers
 	   * 		Un hashmap contenant toutes les informations du header.
 	   * @param byteData
-	   * 		Les donnï¿½es du body sous forme byte[].
+	   * 		Les données du body sous forme byte[].
 	   * 
 	   * @see WebServer#start 
 	   * @see WebServer#requestHandler(PrintWriter, int, String)
@@ -610,6 +626,12 @@ private void head(PrintWriter out, String uri) {
 						  rf.write(byteData);
 						  rf.close();
 						  
+						  /*FileWriter fw = new FileWriter(file, true);
+						  BufferedWriter bw = new BufferedWriter(fw);
+						  
+						  bw.append(data);
+						  bw.close();
+						  fw.close();*/
 					  }else{
 						  System.out.println("File not found.");
 						  requestHandler(out,404,getContentType(file));
