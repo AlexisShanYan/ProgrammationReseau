@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+
+	<head>
+		<title>Adding two numbers</title>
+	</head>
+
+	<body>
+		<form action="#" method="get">
+		Enter First Number: <input type="text" id="first" name="first"/>
+		Enter Second Number: <input type="text" id="second" name="second"/>
+		<input type="submit" onclick="loadXMLDoc()" value="Submit"/>
+		Result is: <p id="answer"></p>
+		</form>
+		<script>
+			function loadXMLDoc()
+			{
+				var xmlhttp;
+				if (window.XMLHttpRequest)
+				{
+					xmlhttp=new XMLHttpRequest();
+				}
+				xmlhttp.onreadystatechange=function()
+				{
+					if (xmlhttp.readyState==4 && xmlhttp.status==200)
+					{
+						document.getElementById("answer").innerHTML=xmlhttp.responseText;
+					}
+				}
+			}
+		</script>
+
+	</body>
+
+</html>
